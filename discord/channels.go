@@ -105,7 +105,7 @@ type Attachment struct {
 	Width    int       `json:"width"`
 }
 
-func (s *ChannelsService) CreateMessage(content string) error {
+func (s *ChannelsService) CreateMessage(content string) (*Message, error) {
 	var data struct {
 		Content string `json:"content"`
 		Nonce   string `json:"nonce,omitempty"`
@@ -115,11 +115,11 @@ func (s *ChannelsService) CreateMessage(content string) error {
 	url := s.baseURL() + "/messages"
 	req, err := s.client.NewRequest("POST", url, &data)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	_, err = s.client.Do(req, nil)
-	return err
+	var msg Message
+	_, err = s.client.Do(req, &msg)
+	return &msg, err
 }
 
 func (s *ChannelsService) UploadFile(filename string, body io.Reader) error {

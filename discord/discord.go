@@ -54,13 +54,14 @@ type Client struct {
 
 	BaseURL   *url.URL
 	UserAgent string
-
-	Guilds *GuildsService
-	Users  *UsersService
 }
 
-func (c *Client) Channel(channelId Snowflake) *ChannelsService {
-	return &ChannelsService{client: c, ChannelID: channelId}
+func (c *Client) Channel(channelID Snowflake) *ChannelsService {
+	return &ChannelsService{client: c, ChannelID: channelID}
+}
+
+func (c *Client) Guild(guildID Snowflake) *GuildsService {
+	return &GuildsService{client: c, GuildID: guildID}
 }
 
 func NewClient(httpClient *http.Client) *Client {
@@ -72,20 +73,18 @@ func NewClient(httpClient *http.Client) *Client {
 
 	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
 
-	c.Guilds = &GuildsService{client: c}
-	c.Users = &UsersService{client: c}
-
 	return c
 }
 
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	var buf io.ReadWriter
-	if body != nil {
-		buf = new(bytes.Buffer)
-		err := json.NewEncoder(buf).Encode(body)
-		if err != nil {
-			return nil, err
-		}
+	if body == nil {
+		return c.newRequest(method, urlStr, nil, "")
+	}
+
+	buf := new(bytes.Buffer)
+	err := json.NewEncoder(buf).Encode(body)
+	if err != nil {
+		return nil, err
 	}
 	return c.newRequest(method, urlStr, buf, "application/json")
 }
@@ -125,19 +124,18 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
-		} else {
-			err = json.NewDecoder(resp.Body).Decode(v)
-			if err == io.EOF {
-				err = nil
-			}
+	buf := new(bytes.Buffer)
+	io.Copy(buf, resp.Body)
+	return resp, json.Unmarshal(buf.Bytes(), v)
+	/*
+		fmt.Println(string(buf.Bytes()))
+		err = json.NewDecoder(resp.Body).Decode(v)
+		if err != nil && err != io.EOF {
+			return nil, err
 		}
-	}
 
-	return resp, nil
+		return resp, nil
+	*/
 }
 
 func CheckResponse(r *http.Response) error {

@@ -62,7 +62,7 @@ func NewGateway() (*Gateway, error) {
 }
 
 func (g *Gateway) Start(token string) error {
-	ws, err := websocket.Dial(g.url, "", "https://dummy/")
+	ws, err := websocket.Dial(g.url, "", "https://localhost/")
 	if err != nil {
 		return err
 	}

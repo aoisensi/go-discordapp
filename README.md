@@ -5,3 +5,6 @@
 
 ## Warning
 Code will broken.
+
+## Discord Guild
+https://discord.me/go-discordapp

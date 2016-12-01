@@ -40,7 +40,7 @@ type payloadDispatch struct {
 	Event Event
 }
 
-func (p payloadDispatch) encode() *payload {
+func (p *payloadDispatch) encode() *payload {
 	return &payload{
 		Opcode:   opcodeDispatch,
 		Data:     p,
@@ -51,7 +51,7 @@ func (p payloadDispatch) encode() *payload {
 
 type payloadHeartbeat int
 
-func (p payloadHeartbeat) encode() *payload {
+func (p *payloadHeartbeat) encode() *payload {
 	return &payload{
 		Opcode: opcodeHeartbeat,
 		Data:   p,
@@ -66,7 +66,7 @@ type payloadIdentify struct {
 	Shard           [2]int            `json:"shard"`
 }
 
-func (p payloadIdentify) encode() *payload {
+func (p *payloadIdentify) encode() *payload {
 	return &payload{
 		Opcode: opcodeIdentify,
 		Data:   p,
@@ -78,10 +78,52 @@ type payloadStatusUpdate struct {
 	Game      *Game `json:"game"`
 }
 
-func (p payloadStatusUpdate) encode() *payload {
+func (p *payloadStatusUpdate) encode() *payload {
 	return &payload{
 		Opcode: opcodeStatusUpdate,
 		Data:   p,
+	}
+}
+
+type payloadVoiceStateUpdate struct {
+	GuildID   Snowflake  `json:"guild_id,string"`
+	ChannelID *Snowflake `json:"channel_id,string"`
+	SelfMute  bool       `json:"self_mute"`
+	SelfDeaf  bool       `json:"self_deaf"`
+}
+
+func (p *payloadVoiceStateUpdate) encode() *payload {
+	return &payload{
+		Opcode: opcodeVoiceStatusUpdate,
+		Data:   p,
+	}
+}
+
+type payloadVoiceServerPing struct{}
+
+func (p *payloadVoiceServerPing) encode() *payload {
+	return &payload{
+		Opcode: opcodeVoiceServerPing,
+	}
+}
+
+type payloadHello struct {
+	HeartbeatInterval int      `json:"heartbeat_interval"`
+	Trace             []string `json:"_trace"`
+}
+
+func (p *payloadHello) encode() *payload {
+	return &payload{
+		Opcode: opcodeHello,
+		Data:   p,
+	}
+}
+
+type payloadHeartbackACK struct{}
+
+func (p *payloadHeartbackACK) encode() *payload {
+	return &payload{
+		Opcode: opcodeHeartbackACK,
 	}
 }
 
@@ -102,26 +144,6 @@ func (pl *payload) encodeData() error {
 	raw := json.RawMessage(body)
 	pl.Raw = &raw
 	return nil
-}
-
-type payloadHello struct {
-	HeartbeatInterval int      `json:"heartbeat_interval"`
-	Trace             []string `json:"_trace"`
-}
-
-func (p payloadHello) encode() *payload {
-	return &payload{
-		Opcode: opcodeHello,
-		Data:   p,
-	}
-}
-
-type payloadHeartbackACK struct{}
-
-func (p payloadHeartbackACK) encode() *payload {
-	return &payload{
-		Opcode: opcodeHeartbackACK,
-	}
 }
 
 func (pl *payload) decode() (payloadData, error) {

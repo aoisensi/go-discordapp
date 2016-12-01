@@ -8,36 +8,80 @@ type GuildsService struct {
 }
 
 func (s *GuildsService) baseURL() string {
-	return "guilds/" + string(s.GuildID)
+	return "guilds/" + s.GuildID.String()
 }
 
 type Guild struct {
-	ID                Snowflake `json:"id"`
-	Name              string    `json:"name"`
-	Icon              string    `json:"icon"`
-	Splash            string    `json:"Splash"`
-	OwnerID           string    `json:"owner_id"`
-	Region            string    `json:"region"`
-	AFKChannelID      string    `json:"afk_channel_id"`
-	AFKTimeout        int       `json:"afk_timeout"`
-	EmbedEnabled      bool      `json:"embed_enabled"`
-	EmbedChannelID    string    `json:"embed_channel_id"`
-	VerificationLevel int       `json:"verification_level"`
-	//VoiceStates
-	//Roles
-	//Emojis
+	ID                          Snowflake      `json:"id,string"`
+	Name                        string         `json:"name"`
+	Icon                        string         `json:"icon"`
+	Splash                      string         `json:"Splash"`
+	OwnerID                     Snowflake      `json:"owner_id,string"`
+	Region                      string         `json:"region"`
+	AFKChannelID                Snowflake      `json:"afk_channel_id,string"`
+	AFKTimeout                  int            `json:"afk_timeout"`
+	EmbedEnabled                bool           `json:"embed_enabled"`
+	EmbedChannelID              string         `json:"embed_channel_id,string"`
+	VerificationLevel           int            `json:"verification_level"`
+	DefaultMessageNotifications int            `json:"default_message_notifications"`
+	Roles                       []Role         `json:"roles"`
+	Emojis                      []Emoji        `json:"emojis"`
+	MFALevel                    int            `json:"mfa_level"`
+	Large                       *bool          `json:"large,omitempty"`
+	Unavailable                 *bool          `json:"unavailable,omitempty"`
+	MemberCount                 int            `json:"member_count"`
+	VoiceStates                 *[]VoiceState  `json:"voice_states,omitempty"`
+	Members                     *[]GuildMember `json:"members,omitempty"`
+	//TODO
+	//Channels
 	//Features
+	//JoindAt
+	//Presences
 }
 
 type UnavailableGuild struct {
-	ID          Snowflake `json:"id"`
+	ID          Snowflake `json:"id,string"`
 	Unavailable bool      `json:"unavailable"`
 }
 
+type GuildEmbed struct {
+	Enabled   bool      `json:"enabled"`
+	ChannelID Snowflake `json:"channel_id"`
+}
+
+type GuildMember struct {
+	User  User        `json:"user"`
+	Nick  *string     `json:"nick"`
+	Roles []Snowflake `json:"roles"`
+	Deaf  bool        `json:"deaf"`
+	Mute  bool        `json:"mute"`
+	//TODO
+	//JoinedAt
+}
+
+type Integration struct {
+	ID                Snowflake          `json:"id,string"`
+	Name              string             `json:"name"`
+	Type              string             `json:"type"`
+	Enabled           bool               `json:"enabled"`
+	Syncing           bool               `json:"syncing"`
+	RoleID            Snowflake          `json:"role_id"`
+	ExpireBehavior    int                `json:"expire_behavior"`
+	ExpireGracePeriod int                `json:"expire_grace_period"`
+	User              User               `json:"user"`
+	Account           IntegrationAccount `json:"account"`
+	SyncedAt          Timestamp          `json:"timestamp"`
+}
+
+type IntegrationAccount struct {
+	ID   string `json:"id`
+	Name string `json:"name"`
+}
+
 type Emoji struct {
-	ID            Snowflake   `json:"id"`
+	ID            Snowflake   `json:"id,string"`
 	Name          string      `json:"name"`
-	Roles         []Snowflake `json:"roles"`
+	Roles         []Snowflake `json:"roles,string"`
 	RequireColons bool        `json:"require_colons"`
 	Managed       bool        `json:"managed"`
 }

@@ -3,8 +3,6 @@ package discord
 import (
 	"fmt"
 	"net/http"
-	"net/url"
-	"strconv"
 )
 
 type UsersService struct {
@@ -12,50 +10,32 @@ type UsersService struct {
 }
 
 type User struct {
-	ID            Snowflake `json:"id"`
+	ID            Snowflake `json:"id,string"`
 	Username      string    `json:"username"`
 	Discriminator string    `json:"discriminator"`
 	Avatar        string    `json:"avatar"`
+	Bot           bool      `json:"bot"`
+	MFAEnabled    bool      `json:"mfa_enabled"`
 	Verified      bool      `json:"verified"`
 	Email         string    `json:"email"`
-	GuildID       Snowflake `json:"guild_id,omitempty"`
 }
 
 //A brief version of a guild object
 type UserGuild struct {
-	ID         Snowflake `json:"id"`
-	Name       string    `json:"name"`
-	Icon       string    `json:"icon"`
-	Owner      bool      `json:"owner"`
-	Permission int       `json:"permission"`
+	ID          Snowflake `json:"id,string"`
+	Name        string    `json:"name"`
+	Icon        string    `json:"icon"`
+	Owner       bool      `json:"owner"`
+	Permissions int       `json:"permissions"`
 }
 
-//Returns a list of user objects for a given query.
-//Only returns users that share a mutual guild with the requestor.
-func (s *UsersService) QueryUser(q string, limit int) ([]*User, *http.Response, error) {
-	v := url.Values{}
-	v.Set("q", q)
-	if limit != 0 {
-		v.Set("limit", strconv.Itoa(limit))
-	}
-
-	u := fmt.Sprintf("users?%v", v.Encode())
-
-	req, err := s.client.NewRequest("GET", u, nil)
-
-	if err != nil {
-		return nil, nil, err
-	}
-	if limit <= 0 {
-		limit = 25
-	}
-	users := make([]*User, 0, limit)
-	resp, err := s.client.Do(req, users)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return users, resp, err
+//The connection object that the user has attached.
+type Connection struct {
+	ID           string        `json:"id"`
+	Name         string        `json:"name"`
+	Type         string        `json:"type"`
+	Revoked      bool          `json:"revoked"`
+	Integrations []Integration `json:"integrations"`
 }
 
 //Returns the user object of the requestors account.
@@ -65,8 +45,8 @@ func (s *UsersService) GetCurrentUser() (*User, *http.Response, error) {
 }
 
 //Returns a user for a given user ID.
-func (s *UsersService) GetUser(userID string) (*User, *http.Response, error) {
-	u := fmt.Sprintf("users/%v", userID)
+func (s *UsersService) GetUser(Snowflake string) (*User, *http.Response, error) {
+	u := fmt.Sprintf("users/%v", Snowflake)
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
@@ -128,8 +108,8 @@ func (s *UsersService) GetCurrentUserGuild() ([]*UserGuild, *http.Response, erro
 
 //Leave a guild.
 //Returns a 204 empty response on success.
-func (s *UsersService) LeaveGuild(guildID string) (*http.Response, error) {
-	u := fmt.Sprintf("users/@me/guilds/%v", guildID)
+func (s *UsersService) LeaveGuild(Snowflake string) (*http.Response, error) {
+	u := fmt.Sprintf("users/@me/guilds/%v", Snowflake)
 	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
 		return nil, err
@@ -161,11 +141,11 @@ func (s *UsersService) GetUserDMs() ([]*DMChannel, *http.Response, error) {
 
 //Create a new DM channel with a user.
 //Returns a DM channel object.
-func (s *UsersService) CreateDM(recipientID string) (*DMChannel, *http.Response, error) {
+func (s *UsersService) CreateDM(recipientID Snowflake) (*DMChannel, *http.Response, error) {
 	data := struct {
-		RecipientID Snowflake `json:"recipient_id"`
+		RecipientID Snowflake `json:"recipient_id,string"`
 	}{
-		RecipientID: Snowflake(recipientID),
+		RecipientID: recipientID,
 	}
 	req, err := s.client.NewRequest("POST", "users/@me/channels", &data)
 	if err != nil {
@@ -181,8 +161,19 @@ func (s *UsersService) CreateDM(recipientID string) (*DMChannel, *http.Response,
 	return channel, resp, err
 }
 
-/*
-//Returns a list of connection objects.
-//Requires the connections OAuth2 scope.
-func (s *UsersService) GetUsersConnections() ([]*Co)
-*/
+//Returns a list of connection objects. Requires the connections OAuth2 scope.
+func (s *UsersService) GetUsersConnections() ([]*Connection, *http.Response, error) {
+
+	req, err := s.client.NewRequest("GET", "users/@me/connections", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var conns []*Connection
+	resp, err := s.client.Do(req, conns)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return conns, resp, err
+}

@@ -1,35 +1,32 @@
 package discord
 
-import "net/http"
+import (
+	"context"
 
-func NewBotClient(token string) *http.Client {
-	client := http.DefaultClient
-	t := new(tripper)
-	t.token = token
-	client.Transport = t
-	return client
-}
+	"golang.org/x/oauth2"
+)
 
-type tripper struct {
-	token string
-}
+func NewBotClient(ctx context.Context, token string) *Client {
+	t := oauth2.Token{
+		TokenType:   "Bot",
+		AccessToken: token,
+	}
 
-func (t *tripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("Authorization", "Bot "+t.token)
-	return http.DefaultTransport.RoundTrip(req)
+	cli := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&t))
+	return newClient(cli)
 }
 
 type ApplicationInfo struct {
 	Description string        `json:"description"`
 	Icon        *string       `json:"icon"`
-	ID          Snowflake     `json:"id"`
+	ID          Snowflake     `json:"id,string"`
 	Name        string        `json:"name"`
 	RPCOrigins  []interface{} `json:"rpc_origins"`
 	Flags       uint64        `json:"flags"`
 	Owner       struct {
 		Username      string    `json:"username"`
 		Discriminator string    `json:"discriminator"`
-		ID            Snowflake `json:"id"`
+		ID            Snowflake `json:"id,string"`
 		Avatar        *string   `json:"avatar"`
 	} `json:"owner"`
 }

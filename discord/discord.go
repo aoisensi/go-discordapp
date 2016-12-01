@@ -17,8 +17,6 @@ const (
 	userAgent      = "DiscordBot (\"http://github.com/aoisensi/go-discordapp\", \"dev\")"
 )
 
-type Snowflake string
-
 type Status string
 
 const (
@@ -56,15 +54,15 @@ type Client struct {
 	UserAgent string
 }
 
-func (c *Client) Channel(channelID Snowflake) *ChannelsService {
-	return &ChannelsService{client: c, ChannelID: channelID}
+func (c *Client) Channel(ChannelID Snowflake) *ChannelsService {
+	return &ChannelsService{client: c, ChannelID: ChannelID}
 }
 
-func (c *Client) Guild(guildID Snowflake) *GuildsService {
-	return &GuildsService{client: c, GuildID: guildID}
+func (c *Client) Guild(GuildID Snowflake) *GuildsService {
+	return &GuildsService{client: c, GuildID: GuildID}
 }
 
-func NewClient(httpClient *http.Client) *Client {
+func newClient(httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
@@ -127,15 +125,6 @@ func (c *Client) Do(req *http.Request, v interface{}) (*http.Response, error) {
 	buf := new(bytes.Buffer)
 	io.Copy(buf, resp.Body)
 	return resp, json.Unmarshal(buf.Bytes(), v)
-	/*
-		fmt.Println(string(buf.Bytes()))
-		err = json.NewDecoder(resp.Body).Decode(v)
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-
-		return resp, nil
-	*/
 }
 
 func CheckResponse(r *http.Response) error {

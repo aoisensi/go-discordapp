@@ -1,7 +1,7 @@
 package discord
 
 type Webhook struct {
-	ID        Snowflake  `json:"id,string"`
+	ID        Snowflake  `json:"id"`
 	GuildID   *Snowflake `json:"guild_id"`
 	ChannelID *Snowflake `json:"channel_id"`
 	User      *User      `json:"user"`

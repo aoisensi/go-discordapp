@@ -12,16 +12,16 @@ func (s *GuildsService) baseURL() string {
 }
 
 type Guild struct {
-	ID                          Snowflake      `json:"id,string"`
+	ID                          Snowflake      `json:"id"`
 	Name                        string         `json:"name"`
 	Icon                        string         `json:"icon"`
 	Splash                      string         `json:"Splash"`
-	OwnerID                     Snowflake      `json:"owner_id,string"`
+	OwnerID                     Snowflake      `json:"owner_id"`
 	Region                      string         `json:"region"`
-	AFKChannelID                Snowflake      `json:"afk_channel_id,string"`
+	AFKChannelID                Snowflake      `json:"afk_channel_id"`
 	AFKTimeout                  int            `json:"afk_timeout"`
 	EmbedEnabled                bool           `json:"embed_enabled"`
-	EmbedChannelID              string         `json:"embed_channel_id,string"`
+	EmbedChannelID              string         `json:"embed_channel_id"`
 	VerificationLevel           int            `json:"verification_level"`
 	DefaultMessageNotifications int            `json:"default_message_notifications"`
 	Roles                       []Role         `json:"roles"`
@@ -40,7 +40,7 @@ type Guild struct {
 }
 
 type UnavailableGuild struct {
-	ID          Snowflake `json:"id,string"`
+	ID          Snowflake `json:"id"`
 	Unavailable bool      `json:"unavailable"`
 }
 
@@ -60,7 +60,7 @@ type GuildMember struct {
 }
 
 type Integration struct {
-	ID                Snowflake          `json:"id,string"`
+	ID                Snowflake          `json:"id"`
 	Name              string             `json:"name"`
 	Type              string             `json:"type"`
 	Enabled           bool               `json:"enabled"`
@@ -79,9 +79,9 @@ type IntegrationAccount struct {
 }
 
 type Emoji struct {
-	ID            Snowflake   `json:"id,string"`
+	ID            Snowflake   `json:"id"`
 	Name          string      `json:"name"`
-	Roles         []Snowflake `json:"roles,string"`
+	Roles         []Snowflake `json:"roles"`
 	RequireColons bool        `json:"require_colons"`
 	Managed       bool        `json:"managed"`
 }

@@ -10,7 +10,7 @@ type UsersService struct {
 }
 
 type User struct {
-	ID            Snowflake `json:"id,string"`
+	ID            Snowflake `json:"id"`
 	Username      string    `json:"username"`
 	Discriminator string    `json:"discriminator"`
 	Avatar        string    `json:"avatar"`
@@ -22,7 +22,7 @@ type User struct {
 
 //A brief version of a guild object
 type UserGuild struct {
-	ID          Snowflake `json:"id,string"`
+	ID          Snowflake `json:"id"`
 	Name        string    `json:"name"`
 	Icon        string    `json:"icon"`
 	Owner       bool      `json:"owner"`
@@ -41,12 +41,16 @@ type Connection struct {
 //Returns the user object of the requestors account.
 //For OAuth2, this requires the identify scope, which will return the object without an email, and optionally the email scope, which returns the object with an email.
 func (s *UsersService) GetCurrentUser() (*User, *http.Response, error) {
-	return s.GetUser("@me")
+	return s.getUser("@me")
 }
 
 //Returns a user for a given user ID.
-func (s *UsersService) GetUser(Snowflake string) (*User, *http.Response, error) {
-	u := fmt.Sprintf("users/%v", Snowflake)
+func (s *UsersService) GetUser(userID Snowflake) (*User, *http.Response, error) {
+	return s.getUser(userID.String())
+}
+
+func (s *UsersService) getUser(userID string) (*User, *http.Response, error) {
+	u := fmt.Sprintf("users/%v", userID)
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
@@ -143,7 +147,7 @@ func (s *UsersService) GetUserDMs() ([]*DMChannel, *http.Response, error) {
 //Returns a DM channel object.
 func (s *UsersService) CreateDM(recipientID Snowflake) (*DMChannel, *http.Response, error) {
 	data := struct {
-		RecipientID Snowflake `json:"recipient_id,string"`
+		RecipientID Snowflake `json:"recipient_id"`
 	}{
 		RecipientID: recipientID,
 	}

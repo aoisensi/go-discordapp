@@ -35,7 +35,7 @@ const (
 )
 
 type Role struct {
-	ID          Snowflake      `json:"id,string"`
+	ID          Snowflake      `json:"id"`
 	Name        string      `json:"name"`
 	Color       int         `json:"color"`
 	Hoist       bool        `json:"hoist"`

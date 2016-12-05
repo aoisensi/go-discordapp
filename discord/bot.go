@@ -1,8 +1,7 @@
 package discord
 
 import (
-	"context"
-
+	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 
@@ -19,14 +18,14 @@ func NewBotClient(ctx context.Context, token string) *Client {
 type ApplicationInfo struct {
 	Description string        `json:"description"`
 	Icon        *string       `json:"icon"`
-	ID          Snowflake     `json:"id,string"`
+	ID          Snowflake     `json:"id"`
 	Name        string        `json:"name"`
 	RPCOrigins  []interface{} `json:"rpc_origins"`
 	Flags       uint64        `json:"flags"`
 	Owner       struct {
 		Username      string    `json:"username"`
 		Discriminator string    `json:"discriminator"`
-		ID            Snowflake `json:"id,string"`
+		ID            Snowflake `json:"id"`
 		Avatar        *string   `json:"avatar"`
 	} `json:"owner"`
 }

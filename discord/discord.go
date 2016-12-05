@@ -62,6 +62,10 @@ func (c *Client) Guild(GuildID Snowflake) *GuildsService {
 	return &GuildsService{client: c, GuildID: GuildID}
 }
 
+func (c *Client) User() *UsersService {
+	return &UsersService{client: c}
+}
+
 func newClient(httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient

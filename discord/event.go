@@ -1,6 +1,11 @@
 package discord
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/k0kubun/pp"
+)
 
 type EventName string
 
@@ -94,7 +99,7 @@ func (e *EventGuildUpdate) EventName() EventName {
 }
 
 type EventGuildDelete struct {
-	ID          Snowflake `json:"id,string"`
+	ID          Snowflake `json:"id"`
 	Unavailable bool      `json:"unavailable"`
 }
 
@@ -115,7 +120,7 @@ func (e *EventGuildBanRemove) EventName() EventName {
 }
 
 type EventGuildEmojiUpdate struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 	Emojis  []Emoji   `json:"emojis"`
 }
 
@@ -124,7 +129,7 @@ func (e *EventGuildEmojiUpdate) EventName() EventName {
 }
 
 type EventGuildIntegrationsUpdate struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 }
 
 func (e *EventGuildIntegrationsUpdate) EventName() EventName {
@@ -132,7 +137,7 @@ func (e *EventGuildIntegrationsUpdate) EventName() EventName {
 }
 
 type EventGuildMemberAdd struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 }
 
 func (e *EventGuildMemberAdd) EventName() EventName {
@@ -140,7 +145,7 @@ func (e *EventGuildMemberAdd) EventName() EventName {
 }
 
 type EventGuildMemberRemove struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 	User    User      `json:"user"`
 }
 
@@ -149,7 +154,7 @@ func (e *EventGuildMemberRemove) EventName() EventName {
 }
 
 type EventGuildMemberUpdate struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 	Roles   []Role    `json:"roles"`
 	User    User      `json:"user"`
 }
@@ -159,7 +164,7 @@ func (e *EventGuildMemberUpdate) EventName() EventName {
 }
 
 type EventGuildMembersChunk struct {
-	GuildID Snowflake     `json:"guild_id,string"`
+	GuildID Snowflake     `json:"guild_id"`
 	Members []interface{} `json:"members"` //TODO
 }
 
@@ -168,7 +173,7 @@ func (e *EventGuildMembersChunk) EventName() EventName {
 }
 
 type EventGuildRoleCreate struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 	Role    Role      `json:"role"`
 }
 
@@ -177,7 +182,7 @@ func (e *EventGuildRoleCreate) EventName() EventName {
 }
 
 type EventGuildRoleUpdate struct {
-	GuildID Snowflake `json:"guild_id,string"`
+	GuildID Snowflake `json:"guild_id"`
 	Role    Role      `json:"role"`
 }
 
@@ -186,8 +191,8 @@ func (e *EventGuildRoleUpdate) EventName() EventName {
 }
 
 type EventGuildRoleDelete struct {
-	GuildID Snowflake `json:"guild_id,string"`
-	RoleID  Snowflake `json:"role_id,string"`
+	GuildID Snowflake `json:"guild_id"`
+	RoleID  Snowflake `json:"role_id"`
 }
 
 func (e *EventGuildRoleDelete) EventName() EventName {
@@ -207,8 +212,8 @@ func (e *EventMessageUpdate) EventName() EventName {
 }
 
 type EventMessageDelete struct {
-	ID        Snowflake `json:"id,string"`
-	ChannelID Snowflake `json:"channel_id,string"`
+	ID        Snowflake `json:"id"`
+	ChannelID Snowflake `json:"channel_id"`
 }
 
 func (e *EventMessageDeleteBulk) EventName() EventName {
@@ -216,8 +221,8 @@ func (e *EventMessageDeleteBulk) EventName() EventName {
 }
 
 type EventMessageDeleteBulk struct {
-	IDs       []Snowflake `json:"ids,string"`
-	ChannelID Snowflake   `json:"channel_id,string"`
+	IDs       []Snowflake `json:"ids"`
+	ChannelID Snowflake   `json:"channel_id"`
 }
 
 func (e *EventMessageDelete) EventName() EventName {
@@ -226,10 +231,10 @@ func (e *EventMessageDelete) EventName() EventName {
 
 type EventPresenceUpdate struct {
 	User    User        `json:"user"`
-	Roles   []Snowflake `json:"roles,string"`
+	Roles   []Snowflake `json:"roles"`
 	Game    Game        `json:"game"` //TODO
 	Nick    string      `json:"nick"`
-	GuildID Snowflake   `json:"guild_id,string"`
+	GuildID Snowflake   `json:"guild_id"`
 	Status  Status      `json:"status"`
 }
 
@@ -238,8 +243,8 @@ func (e *EventPresenceUpdate) EventName() EventName {
 }
 
 type EventTypingStart struct {
-	ChannelID Snowflake `json:"channel_id,string"`
-	UserID    Snowflake `json:"user_id,string"`
+	ChannelID Snowflake `json:"channel_id"`
+	UserID    Snowflake `json:"user_id"`
 	Timestamp Unixtime  `json:"timestamp"`
 }
 
@@ -345,7 +350,12 @@ func (p *payloadDispatch) decode(name EventName) error {
 	default:
 		event = new(EventUnknown)
 	}
-	err := json.Unmarshal([]byte(*p.Raw), event)
+	raw := []byte(*p.Raw)
+	fmt.Println(string(raw))
+	fmt.Println("fds!!!!!!!!!!!!!!!!!!!!!!")
+	pp.Println(event)
+	err := json.Unmarshal(raw, event)
+	fmt.Println("fdsaaaaaaaaaaaaaaaaaaaaaaa")
 	p.Event = event
 	return err
 }

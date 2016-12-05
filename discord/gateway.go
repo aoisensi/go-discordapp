@@ -22,9 +22,9 @@ type Gateway struct {
 	ws       *websocket.Conn
 	mu       sync.RWMutex
 	//	wch      chan *payload
-	rch      chan *payload
-	ech      chan error
-	hch      chan bool
+	readCh   chan *payload
+	errorCh  chan error
+	handleCh chan bool
 	handlers []interface{}
 }
 
@@ -54,9 +54,9 @@ func NewGateway() (*Gateway, error) {
 	return &Gateway{
 		url: url,
 		//		wch: make(chan *payload),
-		rch:      make(chan *payload),
-		ech:      make(chan error),
-		hch:      make(chan bool),
+		readCh:   make(chan *payload),
+		errorCh:  make(chan error),
+		handleCh: make(chan bool),
 		handlers: make([]interface{}, 0),
 	}, nil
 }
@@ -106,12 +106,12 @@ func (g *Gateway) Start(token string) error {
 
 	for {
 		select {
-		case err := <-g.ech:
-			if err == io.EOF {
+		case err := <-g.errorCh:
+			if err != io.EOF {
 				return nil
 			}
-			return err
-		case pl := <-g.rch:
+			panic(err)
+		case pl := <-g.readCh:
 			if data, ok := pl.Data.(*payloadDispatch); ok {
 				g.handle(data.Event)
 			}
@@ -158,13 +158,13 @@ func (g *Gateway) heart() {
 		pl := payloadHeartbeat(g.sequence)
 		err := g.send(pl.encode())
 		if err != nil && err != io.EOF {
-			g.ech <- err
+			g.errorCh <- err
 		}
 		time.Sleep(g.interval)
 		select {
 		case <-ticker.C:
 			continue
-		case <-g.hch:
+		case <-g.handleCh:
 			return
 		}
 	}
@@ -179,16 +179,15 @@ func (g *Gateway) send(pl *payload) error {
 }
 
 func (g *Gateway) receive() (*payload, error) {
-	g.mu.RLock()
-	defer g.mu.RUnlock()
 	pl := new(payload)
-	if err := gwCodec.Receive(g.ws, pl); err != nil {
-		return nil, err
-	}
-	if _, err := pl.decode(); err != nil {
+	err := gwCodec.Receive(g.ws, pl)
+	if err != nil {
 		return nil, err
 	}
 	g.sequence = pl.Sequence
+	if _, err := pl.decode(); err != nil {
+		return nil, err
+	}
 	return pl, nil
 }
 
@@ -196,15 +195,18 @@ func (g *Gateway) receiver() {
 	for {
 		pl, err := g.receive()
 		if err != nil {
-			g.ech <- err
+			g.errorCh <- err
+			continue
 		}
-		g.rch <- pl
+		g.readCh <- pl
 	}
 }
 
 var gwCodec = websocket.Codec{
 	Marshal: func(v interface{}) ([]byte, byte, error) {
 		msg, err := json.Marshal(v)
+		fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		fmt.Println(string(msg))
 		return msg, websocket.TextFrame, err
 	},
 	Unmarshal: func(msg []byte, payloadType byte, v interface{}) error {
@@ -212,6 +214,8 @@ var gwCodec = websocket.Codec{
 		if err != nil {
 			return err
 		}
+		fmt.Println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+		fmt.Println(string(msg))
 		return nil
 	},
 }

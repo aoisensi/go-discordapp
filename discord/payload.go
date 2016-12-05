@@ -2,7 +2,6 @@ package discord
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -86,8 +85,8 @@ func (p *payloadStatusUpdate) encode() *payload {
 }
 
 type payloadVoiceStateUpdate struct {
-	GuildID   Snowflake  `json:"guild_id,string"`
-	ChannelID *Snowflake `json:"channel_id,string"`
+	GuildID   Snowflake  `json:"guild_id"`
+	ChannelID *Snowflake `json:"channel_id"`
 	SelfMute  bool       `json:"self_mute"`
 	SelfDeaf  bool       `json:"self_deaf"`
 }
@@ -147,7 +146,7 @@ func (pl *payload) encodeData() error {
 }
 
 func (pl *payload) decode() (payloadData, error) {
-	doUnmarshal := false
+	unmarshal := false
 	switch pl.Opcode {
 	case opcodeDispatch:
 		data := new(payloadDispatch)
@@ -158,16 +157,16 @@ func (pl *payload) decode() (payloadData, error) {
 		pl.Data = data
 	case opcodeHello:
 		pl.Data = new(payloadHello)
-		doUnmarshal = true
+		unmarshal = true
 	case opcodeHeartbackACK:
 		pl.Data = new(payloadHeartbackACK)
 
 	default:
-		msg := fmt.Sprintf("tried unknown opcode: %v", pl.Opcode)
-		return nil, errors.New(msg)
+		panic(fmt.Sprintf("tried unknown opcode: %v", pl.Opcode))
 	}
+	fmt.Println("FDSFDSF")
 	var err error
-	if doUnmarshal {
+	if unmarshal {
 		err = json.Unmarshal([]byte(*pl.Raw), pl.Data)
 	}
 	return pl.Data, err

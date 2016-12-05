@@ -12,13 +12,16 @@ func NewBotClient(ctx context.Context, token string) *Client {
 	}
 
 	cli := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&t))
-	return newClient(cli)
+	r := newClient(cli)
+	r.token = token
+	r.bot = true
+	return r
 }
 
 type ApplicationInfo struct {
 	Description string        `json:"description"`
 	Icon        *string       `json:"icon"`
-	ID          Snowflake `json:"id,string"`
+	ID          Snowflake     `json:"id,string"`
 	Name        string        `json:"name"`
 	RPCOrigins  []interface{} `json:"rpc_origins"`
 	Flags       uint64        `json:"flags"`

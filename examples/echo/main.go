@@ -22,7 +22,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	cli := discord.NewBotClient(nil, os.Getenv("DISCORD_BOT_TOKEN"))
-	gw, err := discord.NewGateway()
+	gw, _, err := cli.Gateway()
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 		log.Println(e.Content)
 	})
 	log.Println("Start.")
-	if err := gw.Start(os.Getenv("DISCORD_BOT_TOKEN")); err != nil {
+	if err := gw.Start(); err != nil {
 		log.Fatalln(err)
 	}
 }

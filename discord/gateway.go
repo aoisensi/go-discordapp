@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 	"reflect"
 	"runtime"
-	"sync"
 	"time"
+
+	"net/http"
+	"net/url"
 
 	"golang.org/x/net/websocket"
 )
 
 type Gateway struct {
-	sync.RWMutex
+	token     string
 	url       string
 	interval  time.Duration
 	sequence  int
@@ -27,78 +26,43 @@ type Gateway struct {
 	handlers  []interface{}
 }
 
-func NewGateway() (*Gateway, error) {
-	resp, err := http.Get("https://discordapp.com/api/gateway")
-	if err != nil {
-		return nil, err
+func (c *Client) Gateway() (*Gateway, *http.Response, error) {
+	u := "https://discordapp.com/api/gateway"
+	if c.bot {
+		u += "/bot"
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	req, err := c.NewRequest("GET", u, nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	var data struct {
+		URL    string `json:"url"`
+		Shards int    `json:"shards"`
+	}
+	resp, err := c.Do(req, &data)
+	if err != nil {
+		return nil, resp, err
 	}
 
-	data := struct {
-		URL string `json:"url"`
-	}{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, err
-	}
-	v := url.Values{
-		"v":        {"5"},
-		"encoding": {"json"},
-	}
+	v := url.Values{"v": {"5"}, "encoding": {"json"}}
 	url := fmt.Sprint(data.URL, "?", v.Encode())
 
 	return &Gateway{
 		url:       url,
+		token:     c.token,
 		receiveCh: make(chan *payload),
 		errorCh:   make(chan error),
 		handleCh:  make(chan bool),
-	}, nil
+	}, resp, nil
 }
 
-func (g *Gateway) Start(token string) error {
+func (g *Gateway) Start() error {
 	ws, err := websocket.Dial(g.url, "", "https://localhost/")
 	defer ws.Close()
 	if err != nil {
 		return err
 	}
 	g.ws = ws
-
-	pl, err := g.receive()
-	if err != nil {
-		return err
-	}
-	_, err = pl.decode()
-	if err != nil {
-		return err
-	}
-	var hello *payloadHello
-	var ok bool
-	if hello, ok = pl.Data.(*payloadHello); !ok {
-		panic("first recieve is not hello. wtf?")
-	}
-	g.interval = time.Millisecond * time.Duration(hello.HeartbeatInterval)
-	go g.heart()
-
-	pli := payloadIdentify{
-		Token: token,
-		Properties: map[string]string{
-			"$os":               runtime.GOOS,
-			"$browser":          "go-discordapp",
-			"$device":           "go-discordapp",
-			"$referrer":         "",
-			"$referring_domain": "",
-		},
-		Compress:        false,
-		LargeThreashold: 250,
-		Shard:           [2]int{0, 1},
-	}
-
-	if err := g.send(pli.encode()); err != nil {
-		return err
-	}
 
 	go g.receiver()
 
@@ -107,10 +71,40 @@ func (g *Gateway) Start(token string) error {
 		case err := <-g.errorCh:
 			panic(err)
 		case pl := <-g.receiveCh:
-			if data, ok := pl.Data.(*payloadDispatch); ok {
-				g.handle(data.Event)
-			}
+			g.parse(pl)
 		}
+	}
+}
+
+func (g *Gateway) parse(pl *payload) {
+	switch data := pl.Data.(type) {
+	case *payloadDispatch:
+		g.handle(data.Event)
+	case *payloadHeartbackACK:
+		break
+	case *payloadHello:
+		g.interval = time.Millisecond * time.Duration(data.HeartbeatInterval)
+		go g.heart()
+
+		pli := payloadIdentify{
+			Token: g.token,
+			Properties: map[string]string{
+				"os":               runtime.GOOS,
+				"browser":          "go-discordapp",
+				"device":           "go-discordapp",
+				"referrer":         "",
+				"referring_domain": "",
+			},
+			Compress:        false,
+			LargeThreashold: 250,
+			Shard:           [2]int{0, 1},
+		}
+
+		if err := g.send(pli.encode()); err != nil {
+			g.errorCh <- err
+		}
+	default:
+		panic("unknown payload")
 	}
 }
 
@@ -180,7 +174,9 @@ func (g *Gateway) receive() (*payload, error) {
 	if err != nil {
 		return nil, err
 	}
-	g.sequence = pl.Sequence
+	if pl.Sequence != nil {
+		g.sequence = *pl.Sequence
+	}
 	if _, err := pl.decode(); err != nil {
 		return nil, err
 	}
@@ -190,8 +186,10 @@ func (g *Gateway) receive() (*payload, error) {
 func (g *Gateway) receiver() {
 	for {
 		pl, err := g.receive()
-		if err != nil && err != io.EOF {
-			g.errorCh <- err
+		if err != nil {
+			if err != io.EOF {
+				g.errorCh <- err
+			}
 			continue
 		}
 		g.receiveCh <- pl
@@ -201,6 +199,11 @@ func (g *Gateway) receiver() {
 var gwCodec = websocket.Codec{
 	Marshal: func(v interface{}) ([]byte, byte, error) {
 		msg, err := json.Marshal(v)
+		if err != nil {
+			return nil, websocket.UnknownFrame, err
+		}
+		//fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		//fmt.Println(string(msg))
 		return msg, websocket.TextFrame, err
 	},
 	Unmarshal: func(msg []byte, payloadType byte, v interface{}) error {
@@ -208,6 +211,8 @@ var gwCodec = websocket.Codec{
 		if err != nil {
 			return err
 		}
+		//fmt.Println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+		//fmt.Println(string(msg))
 		return nil
 	},
 }

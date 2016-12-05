@@ -48,8 +48,9 @@ func (t *Unixtime) UnmarshalJSON(b []byte) error {
 }
 
 type Client struct {
-	client *http.Client
-
+	client    *http.Client
+	bot       bool
+	token     string
 	BaseURL   *url.URL
 	UserAgent string
 }

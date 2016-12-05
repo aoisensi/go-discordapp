@@ -24,9 +24,9 @@ const (
 
 type payload struct {
 	Opcode   opcode           `json:"op"`
-	Raw      *json.RawMessage `json:"d,omitempty"`
-	Sequence int              `json:"s,omitempty"`
-	Name     EventName        `json:"t,omitempty"`
+	Raw      *json.RawMessage `json:"d"`
+	Sequence *int             `json:"s"`
+	Name     *EventName       `json:"t"`
 	Data     payloadData      `json:"-"`
 }
 
@@ -40,11 +40,11 @@ type payloadDispatch struct {
 }
 
 func (p *payloadDispatch) encode() *payload {
+	e := p.Event.EventName()
 	return &payload{
-		Opcode:   opcodeDispatch,
-		Data:     p,
-		Sequence: 0,
-		Name:     p.Event.EventName(),
+		Opcode: opcodeDispatch,
+		Data:   p,
+		Name:   &e,
 	}
 }
 
@@ -151,7 +151,7 @@ func (pl *payload) decode() (payloadData, error) {
 	case opcodeDispatch:
 		data := new(payloadDispatch)
 		data.Raw = pl.Raw
-		if err := data.decode(pl.Name); err != nil {
+		if err := data.decode(*pl.Name); err != nil {
 			return nil, err
 		}
 		pl.Data = data

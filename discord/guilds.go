@@ -12,13 +12,13 @@ func (s *GuildsService) baseURL() string {
 }
 
 type Guild struct {
-	ID                          Snowflake      `json:"id"`
+	ID                          Snowflake `json:"id,string"`
 	Name                        string         `json:"name"`
 	Icon                        string         `json:"icon"`
 	Splash                      string         `json:"Splash"`
-	OwnerID                     Snowflake      `json:"owner_id"`
+	OwnerID                     Snowflake `json:"owner_id,string"`
 	Region                      string         `json:"region"`
-	AFKChannelID                Snowflake      `json:"afk_channel_id"`
+	AFKChannelID                Snowflake `json:"afk_channel_id,string"`
 	AFKTimeout                  int            `json:"afk_timeout"`
 	EmbedEnabled                bool           `json:"embed_enabled"`
 	EmbedChannelID              string         `json:"embed_channel_id"`
@@ -40,19 +40,19 @@ type Guild struct {
 }
 
 type UnavailableGuild struct {
-	ID          Snowflake `json:"id"`
+	ID          Snowflake `json:"id,string"`
 	Unavailable bool      `json:"unavailable"`
 }
 
 type GuildEmbed struct {
 	Enabled   bool      `json:"enabled"`
-	ChannelID Snowflake `json:"channel_id"`
+	ChannelID Snowflake `json:"channel_id,string"`
 }
 
 type GuildMember struct {
 	User  User        `json:"user"`
 	Nick  *string     `json:"nick"`
-	Roles []Snowflake `json:"roles"`
+	Roles Snowflakes `json:"roles,string"`
 	Deaf  bool        `json:"deaf"`
 	Mute  bool        `json:"mute"`
 	//TODO
@@ -60,12 +60,12 @@ type GuildMember struct {
 }
 
 type Integration struct {
-	ID                Snowflake          `json:"id"`
+	ID                Snowflake `json:"id,string"`
 	Name              string             `json:"name"`
 	Type              string             `json:"type"`
 	Enabled           bool               `json:"enabled"`
 	Syncing           bool               `json:"syncing"`
-	RoleID            Snowflake          `json:"role_id"`
+	RoleID            Snowflake `json:"role_id,string"`
 	ExpireBehavior    int                `json:"expire_behavior"`
 	ExpireGracePeriod int                `json:"expire_grace_period"`
 	User              User               `json:"user"`
@@ -79,9 +79,9 @@ type IntegrationAccount struct {
 }
 
 type Emoji struct {
-	ID            Snowflake   `json:"id"`
+	ID            Snowflake `json:"id,string"`
 	Name          string      `json:"name"`
-	Roles         []Snowflake `json:"roles"`
+	Roles         Snowflakes `json:"roles,string"`
 	RequireColons bool        `json:"require_colons"`
 	Managed       bool        `json:"managed"`
 }

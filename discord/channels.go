@@ -24,31 +24,31 @@ const (
 
 //Guild channels represent an isolated set of users and messages within a Guild.
 type GuildChannel struct {
-	ID                   Snowflake   `json:"id"`
-	GuildID              Snowflake   `json:"guild_id"`
+	ID                   Snowflake   `json:"id,string"`
+	GuildID              Snowflake   `json:"guild_id,string"`
 	Name                 string      `json:"name"`
 	Type                 ChannelType `json:"type"`
 	Position             int         `json:"position"`
 	IsPrivate            bool        `json:"is_private"`
 	PermissionOverwrites []Overwrite `json:"permission_overwrites"`
 	Topic                *string     `json:"topic,omitempty"`
-	LastmessageID        *Snowflake  `json:"last_message_id,omitempty"`
+	LastmessageID        *Snowflake  `json:"last_message_id,omitempty,string"`
 	Bitrate              *int        `json:"bitrate,omitempty"`
 	UserLimit            *int        `json:"user_limit,omitempty"`
 }
 
 //DM Channels represent a one-to-one conversation between two users, outside of the scope of guilds.
 type DMChannel struct {
-	ID            Snowflake `json:"id"`
+	ID            Snowflake `json:"id,string"`
 	IsPrivate     bool      `json:"is_private"`
 	Recipient     User      `json:"recipient"`
-	LastMessageID Snowflake `json:"last_message_id"`
+	LastMessageID Snowflake `json:"last_message_id,string"`
 }
 
 //Represents a message sent in a channel within Discord.
 type Message struct {
-	ID              Snowflake    `json:"id"`
-	ChannelID       Snowflake    `json:"channel_id"`
+	ID              Snowflake    `json:"id,string"`
+	ChannelID       Snowflake    `json:"channel_id,string"`
 	Author          *User        `json:"author,omitempty"`
 	Content         string       `json:"content"`
 	Timestamp       Timestamp    `json:"timestamp"`
@@ -56,11 +56,11 @@ type Message struct {
 	TTS             bool         `json:"tts"`
 	MentionEveryone bool         `json:"mention_everyone"`
 	Mentions        []User       `json:"mentions"`
-	MentionRoles    []Snowflake  `json:"mention_roles"`
+	MentionRoles    Snowflakes   `json:"mention_roles,string"`
 	Attachments     []Attachment `json:"attachments"`
 	Embeds          []Embed      `json:"embeds"`
 	Reactions       []Reaction   `json:"reactions"`
-	Nonce           *Snowflake   `json:"nonce"`
+	Nonce           *Snowflake   `json:"nonce,string"`
 	Pinned          bool         `json:"pinned"`
 	WebhookID       string       `json:"webhook_id"`
 }
@@ -69,7 +69,7 @@ type Reaction struct {
 	Count int  `json:"count"`
 	Me    bool `json:"me"`
 	Emoji struct {
-		ID   *Snowflake `json:"id"`
+		ID   *Snowflake `json:"id,string"`
 		Name string     `json:"name"`
 	} `json:"emoji"`
 }
@@ -82,7 +82,7 @@ const (
 )
 
 type Overwrite struct {
-	ID    Snowflake     `json:"id"`
+	ID    Snowflake     `json:"id,string"`
 	Type  OverwriteType `json:"type"`
 	Allow Permissions   `json:"allow"`
 	Deny  Permissions   `json:"deny"`
@@ -149,7 +149,7 @@ type EmbedField struct {
 }
 
 type Attachment struct {
-	ID       Snowflake `json:"id"`
+	ID       Snowflake `json:"id,string"`
 	Filename string    `json:"filename"`
 	Size     int       `json:"size"`
 	URL      string    `json:"url"`

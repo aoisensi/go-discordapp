@@ -24,7 +24,7 @@ const (
 
 type payload struct {
 	Opcode   opcode           `json:"op"`
-	Raw      *json.RawMessage `json:"d"`
+	Raw      *json.RawMessage `json:"d,omitempty"`
 	Sequence int              `json:"s,omitempty"`
 	Name     EventName        `json:"t,omitempty"`
 	Data     payloadData      `json:"-"`
@@ -85,8 +85,8 @@ func (p *payloadStatusUpdate) encode() *payload {
 }
 
 type payloadVoiceStateUpdate struct {
-	GuildID   Snowflake  `json:"guild_id"`
-	ChannelID *Snowflake `json:"channel_id"`
+	GuildID   Snowflake  `json:"guild_id,string"`
+	ChannelID *Snowflake `json:"channel_id,string,omitempty"`
 	SelfMute  bool       `json:"self_mute"`
 	SelfDeaf  bool       `json:"self_deaf"`
 }
@@ -164,7 +164,6 @@ func (pl *payload) decode() (payloadData, error) {
 	default:
 		panic(fmt.Sprintf("tried unknown opcode: %v", pl.Opcode))
 	}
-	fmt.Println("FDSFDSF")
 	var err error
 	if unmarshal {
 		err = json.Unmarshal([]byte(*pl.Raw), pl.Data)

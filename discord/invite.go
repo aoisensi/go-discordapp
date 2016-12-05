@@ -19,13 +19,13 @@ type InviteMetadata struct {
 }
 
 type InviteGuild struct {
-	ID         Snowflake `json:"id"`
+	ID         Snowflake `json:"id,string"`
 	Name       string    `json:"name"`
 	SplashHash string    `json:"splash_hash"`
 }
 
 type InviteChannel struct {
-	ID   Snowflake   `json:"id"`
+	ID   Snowflake `json:"id,string"`
 	Name string      `json:"name"`
 	Type ChannelType `json:"type"`
 }

@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/aoisensi/go-discordapp/discord"
-	"github.com/k0kubun/pp"
 )
 
 func main() {
@@ -30,7 +29,6 @@ func main() {
 	var user discord.User
 	gw.AddHandler(func(e *discord.EventReady) {
 		user = e.User
-		pp.Println(user)
 	})
 	gw.AddHandler(func(e *discord.EventMessageCreate) {
 		if e.Author.ID == user.ID {
@@ -43,6 +41,7 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+		log.Println(e.Content)
 	})
 	log.Println("Start.")
 	if err := gw.Start(os.Getenv("DISCORD_BOT_TOKEN")); err != nil {

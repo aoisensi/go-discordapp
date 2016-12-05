@@ -147,9 +147,9 @@ func CheckResponse(r *http.Response) error {
 }
 
 type ErrorResponse struct {
-	Response *http.Response
-	Code     int    `json:"code"`
-	Message  string `json:"message"`
+	Response *http.Response `json:"-"`
+	Code     int            `json:"code"`
+	Message  string         `json:"message"`
 }
 
 func (r *ErrorResponse) Error() string {

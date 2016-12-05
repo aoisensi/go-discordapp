@@ -6,9 +6,9 @@ type VoiceService struct {
 
 //Used to represent a user's voice connection status.
 type VoiceState struct {
-	GuildID   *Snowflake `json:"guild_id"`
-	ChannelID Snowflake  `json:"chahhel_id"`
-	UserID    Snowflake  `json:"user_id"`
+	GuildID   *Snowflake `json:"guild_id,string"`
+	ChannelID Snowflake  `json:"chahhel_id,string"`
+	UserID    Snowflake  `json:"user_id,string"`
 	SessionID string     `json:"session_id"`
 	Deaf      bool       `json:"deaf"`
 	Mute      bool       `json:"mute"`

@@ -10,19 +10,19 @@ type UsersService struct {
 }
 
 type User struct {
-	ID            Snowflake `json:"id"`
+	ID            Snowflake `json:"id,string"`
 	Username      string    `json:"username"`
 	Discriminator string    `json:"discriminator"`
-	Avatar        string    `json:"avatar"`
+	Avatar        *string   `json:"avatar,omitempty"`
 	Bot           bool      `json:"bot"`
 	MFAEnabled    bool      `json:"mfa_enabled"`
 	Verified      bool      `json:"verified"`
-	Email         string    `json:"email"`
+	Email         *string   `json:"email,omitempty"`
 }
 
 //A brief version of a guild object
 type UserGuild struct {
-	ID          Snowflake `json:"id"`
+	ID          Snowflake `json:"id,string"`
 	Name        string    `json:"name"`
 	Icon        string    `json:"icon"`
 	Owner       bool      `json:"owner"`
@@ -147,7 +147,7 @@ func (s *UsersService) GetUserDMs() ([]*DMChannel, *http.Response, error) {
 //Returns a DM channel object.
 func (s *UsersService) CreateDM(recipientID Snowflake) (*DMChannel, *http.Response, error) {
 	data := struct {
-		RecipientID Snowflake `json:"recipient_id"`
+		RecipientID Snowflake `json:"recipient_id,string"`
 	}{
 		RecipientID: recipientID,
 	}
